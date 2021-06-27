@@ -1,29 +1,5 @@
 #include "main.h"
 
-//////////////////////////////////////parent
-
-void connect_stdout_pipe_w(int pipefd[2])
-{
-	dup2(STDOUT_FILENO, pipefd[WRITE]);
-	close(pipefd[READ]);
-	close(pipefd[WRITE]);
-}
-
-int connect_file_to_stdin(const char *infile)
-{
-	int fd;
-
-	fd = open(infile, O_RDWR);
-	if(fd < 0)
-	{
-		perror(infile);
-		return (ERROR);
-	}
-	dup2(fd ,STDIN_FILENO);
-	close(fd);
-	return (SUCCESS);
-}
-
 void init_exe(t_exe *exe, char *argv)
 {
 	char **cmd;
@@ -40,6 +16,30 @@ void init_exe(t_exe *exe, char *argv)
 	exe->envp = NULL;
 }
 
+//////////////////////////////////////parent
+
+int connect_file_to_stdin(const char *infile)
+{
+	int fd;
+
+	fd = open(infile, O_RDWR);
+	if(fd < 0)
+	{
+		perror(infile);
+		return (ERROR);
+	}
+	dup2(fd ,STDIN_FILENO);
+	close(fd);
+	return (SUCCESS);
+}
+
+void connect_stdout_pipe_w(int pipefd[2])
+{
+	dup2(STDOUT_FILENO, pipefd[WRITE]);
+	close(pipefd[READ]);
+	close(pipefd[WRITE]);
+}
+
 void use_pipe_w_to_stdout(char *argv)
 {
 	t_exe exe;
@@ -51,7 +51,7 @@ void use_pipe_w_to_stdout(char *argv)
 		execve(exe.path[i], exe.argv, exe.envp);
 	perror(argv);
 }
-////////////////////////////////////////
+////////////////////////////////////////child
 
 int connect_file_to_stdout(char *outfile)
 {
