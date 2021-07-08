@@ -1,111 +1,60 @@
-#include "main.h"
+#include <unistd.h>
+#include <readline/readline.h>
+#include "./libft/libft.h"
+#define READ 0
+#define WRITE 1
 
-void init_exe(t_exe *exe, char *argv)
+int main()
 {
-	char **cmd;
-	
-	cmd = ft_split(cmd, ' ');
-	
-	exe->path[0] = ft_strjoin("/usr/local/bin/", cmd[0]);
-	exe->path[1] = ft_strjoin("/usr/bin/", cmd[0]);
-	exe->path[2] = ft_strjoin("/bin/", cmd[0]);
-	exe->path[3] = ft_strjoin("/usr/sbin/", cmd[0]);
-	exe->path[4] = ft_strjoin("/sbin/", cmd[0]);
+	pid_t pid1;
+	int status1;
 
-	exe->argv = cmd;
-	exe->envp = NULL;
-}
+	pid1 = fork();
 
-//////////////////////////////////////parent
-
-int connect_file_to_stdin(const char *infile)
-{
-	int fd;
-
-	fd = open(infile, O_RDWR);
-	if(fd < 0)
+	if (pid1 < 0)
+		printf(" no child");
+	else if(pid1 == 0)
 	{
-		perror(infile);
-		return (ERROR);
+		//명령받아오기 exit니면 실행하러	
+		char *prompt;
+		char *exe = readline(prompt);	
+		char **exe_split = ft_split(exe , ' ');
+		while(1)
+		{
+			pid_t pid2;
+			int fildes[2];
+			pipe(fildes);
+		
+			pid2 = fork();
+			if (pid2 == 0) //자식
+			{
+				char *exe;
+				exe = 0;
+				read(fildes[READ], exe, ft_strlen(exe));
+				execve("/bin/ls", exe, 0);
+			}
+			else if(pid2 > 0) //부모
+			{
+				int status2;
+//***********	
+				int i = 0;
+				if(ft_strnstr("ls", exe_split[i], ft_strlen(exe)) == 0)
+				{
+					write(fildes[WRITE], exe_split[i], ft_strlen(exe));
+					waitpid(pid2, &status2, 0);
+				}
+//***********
+				else if(ft_strnstr("exit", exe, ft_strlen(exe)) == 0)
+				{
+					exit(0);
+				}
+			//exit이면 종료
+			}
+		}
 	}
-	dup2(fd ,STDIN_FILENO);
-	close(fd);
-	return (SUCCESS);
-}
-
-void connect_stdout_pipe_w(int pipefd[2])
-{
-	dup2(STDOUT_FILENO, pipefd[WRITE]);
-	close(pipefd[READ]);
-	close(pipefd[WRITE]);
-}
-
-void use_pipe_w_to_stdout(char *argv)
-{
-	t_exe exe;
-	int i;
-
-	i = 0;
-	init_exe(&exe, argv);
-	while(i < 5)
-		execve(exe.path[i], exe.argv, exe.envp);
-	perror(argv);
-}
-////////////////////////////////////////child
-
-int connect_file_to_stdout(char *outfile)
-{
-	int fd;
-
-	fd = open(outfile, O_RDWR | O_CREAT, 0644);
-	if( fd < 0)
+	else if(pid1 > 0) //할아버지
 	{
-		perror(outfile);
-		return(ERROR);
+		printf("welcome new shell");
+		waitpid(pid1, &status1, 0);
 	}
-	dup2(fd ,STDOUT_FILENO);
-	close(fd);
-	return (SUCCESS);
-}
-
-void connect_stdin_pipe_r(int pipefd[2])
-{
-	dup2(pipefd[1], STDIN_FILENO);
-	close(pipefd[0]);
-	close(pipefd[1]);
-}
-
-void use_pipe_r_to_file(char *argv)
-{
-	t_exe exe;
-	int i;
-
-	i = 0;
-	init_exe(&exe, argv);
-	while(i < 5)
-		execve(exe.path[i], exe.argv, exe.envp);
-	perror(argv);
-}
-
-int main(int argc, char *argv[])
-{
-	int pipefd[2];
-	pid_t pid;
-
-
-	pipe(pipefd);
-	pid = fork();
-	if(pid > 0)
-	{
-		connect_file_to_stdin(argv[1]);
-		connect_stdout_pipe_w(pipefd);
-		use_pipe_w_to_stdout(argv[2]);
-	}
-	else if(pid == 0)
-	{
-		connect_file_to_stdout(argv[4]);			
-		connect_stdin_pipe_r(pipefd);
-		use_pipe_r_to_file(argv[3]);	
-	}
-	return(0);
 }
