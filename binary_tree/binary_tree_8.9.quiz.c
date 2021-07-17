@@ -105,7 +105,7 @@ int get_nonleaf_count(t_TreeNode *root)
 // 검사 하는 함수
 
 
-int equal(t_TreeNode *t1, t_TreeNode *t2)
+int equal_1(t_TreeNode *t1, t_TreeNode *t2)
 {
 	int count = 0;
 
@@ -114,11 +114,28 @@ int equal(t_TreeNode *t1, t_TreeNode *t2)
 		if(t1->data != t2->data)
 			return(1);
 		else
-			count = equal(t1->left, t2->left) + equal(t1->right, t2->right); 
+			count = equal_1(t1->left, t2->left) + equal_1(t1->right, t2->right); 
 	}
 	if(count >= 1)
 		count = 1;	
 	return(count);
+}
+
+int equal_2(t_TreeNode *t1, t_TreeNode *t2)
+{
+	int diff_count = 0;
+
+	if(diff_count == 0)
+	{
+		if(t1 !=NULL && t2 != NULL)
+		{
+			if(t1->data != t2->data)
+				return (1);
+			else
+				diff_count = equal_2(t1->left, t2->left) | equal_2(t1->right, t2->right);
+		}
+	}
+	return (diff_count);
 }
 
 char *print_TRUE(int a)
@@ -143,5 +160,6 @@ int main()
 	printf("3 == nonleaf : %d\n", get_nonleaf_count(g_root));
 	printf("1 == nonleaf : %d\n", get_nonleaf_count(root));
 
-	printf("ARE they equal ? : %s" , print_TRUE(equal(g_root, G_root)));
+	printf("ARE they equal ? : %s" , print_TRUE(equal_1(g_root, G_root)));
+	printf("ARE they equal ? : %s" , print_TRUE(equal_2(g_root, G_root)));
 }
