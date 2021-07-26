@@ -85,9 +85,8 @@ void kruskal(t_GraphType *g)
 	int i = 0;
 	while(edge_accepted < (g->n - 1))
 	{
-		/*if(i >= g->n)
+		if(i >= g->n)
 			break;
-		*/
 		e = g -> edges[i];
 		uset = set_find(e.start);
 		vset = set_find(e.end);
