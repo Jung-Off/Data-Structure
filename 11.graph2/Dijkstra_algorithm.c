@@ -69,7 +69,18 @@ void shortest_path(t_GraphType *g, int start)
 }
 
 int main()
-{
+{	
+	t_GraphType g = {8,
+	{{ 0, 7, INF, 5, INF, 2, INF, INF},
+	{ 7, 0, 6, INF, 2, INF, INF, 1},
+	{ INF, 6, 0, 2, INF, INF, 2, 4}, 
+	{ 5, INF, 2, 0, INF, 5, INF, INF},
+	{ INF, 2, INF, INF, 0, 2, INF, 4},
+	{ 2, INF, INF, 5, 2, 0, 4, INF},
+	{INF, INF, 2, INF, INF, 4, 0, 4},
+	{INF, 1, 8, INF, 4, INF, 4, 0}}
+	};
+/*
 	t_GraphType g = {7,
 	{{ 0, 7, INF, INF, 3, 10, INF},
 	{ 7, 0, 4, 10, 2, 6, INF},
@@ -79,6 +90,7 @@ int main()
 	{10, 6, INF, 9, INF, 0, INF},
 	{INF, INF, INF, 4, 5, INF, 0}}
 	};
+*/
 	shortest_path(&g, 0);
 	return 0;
 }
